@@ -50,6 +50,14 @@ struct NetMapData {
 extern CommandOutput netMapDataDispatch(void *inst, const char *act, const String &args);
 
 // ============================================================
+// ChipData —— MCU 专有·芯片信息：info（型号/ID/内核/频率/闪存）
+// ============================================================
+struct ChipData {
+    CommandOutput dispatch(const char *act, const String &args);
+};
+extern CommandOutput chipDataDispatch(void *inst, const char *act, const String &args);
+
+// ============================================================
 // 注册全部 Data
 // ============================================================
 void registerAllData(Atom &atom);

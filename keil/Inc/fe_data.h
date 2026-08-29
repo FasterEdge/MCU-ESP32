@@ -42,6 +42,11 @@ typedef struct {
 fe_output_t data_netmap_dispatch(void *inst, const char *act, const char *args);
 
 // ============================================================
+// ChipData —— MCU 专有·芯片信息：info
+// ============================================================
+fe_output_t data_chip_dispatch(void *inst, const char *act, const char *args);
+
+// ============================================================
 // 注册全部 Data（register.c 调用）
 // ============================================================
 void fe_register_all_data(fe_atom_t *atom);

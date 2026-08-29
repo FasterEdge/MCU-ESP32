@@ -142,6 +142,35 @@ void fe_port_delay_ms(uint32_t ms) {
     (void)ms;
 }
 
+// ============================================================
+// GPIO —— 见文件末尾 ESP-IDF 参考（driver/gpio.h）
+// ============================================================
+int fe_port_gpio_set_mode(uint8_t pin, const char *mode) {
+    // TODO: 设置引脚模式（input / output / input_pullup）
+    (void)pin; (void)mode;
+    return 0;
+}
+
+int fe_port_gpio_write(uint8_t pin, uint8_t level) {
+    // TODO: 输出电平 0/1
+    (void)pin; (void)level;
+    return 0;
+}
+
+int fe_port_gpio_read(uint8_t pin) {
+    // TODO: 读输入电平
+    (void)pin;
+    return 0;
+}
+
+// ============================================================
+// 芯片信息 —— 见文件末尾 ESP-IDF 参考（esp_chip_info.h / esp_efuse）
+// ============================================================
+void fe_port_chip_info(char *out, size_t outlen) {
+    // TODO: 生成芯片信息 JSON，如 {"chip":"ESP32","cores":2,...}
+    snprintf(out, outlen, "{\"chip\":\"ESP32\"}");
+}
+
 /*
  * ============================================================
  * ESP32 (ESP-IDF) 参考实现片段
@@ -201,6 +230,33 @@ void fe_port_delay_ms(uint32_t ms) {
  *   #include "freertos/FreeRTOS.h"
  *   #include "freertos/task.h"
  *   void fe_port_delay_ms(uint32_t ms) { vTaskDelay(pdMS_TO_TICKS(ms)); }
+ *
+ *   // GPIO
+ *   #include "driver/gpio.h"
+ *   int fe_port_gpio_set_mode(uint8_t pin, const char *mode) {
+ *       gpio_config_t cfg = {0};
+ *       if (strcmp(mode, "input") == 0)       cfg.mode = GPIO_MODE_INPUT;
+ *       else if (strcmp(mode, "input_pullup") == 0) { cfg.mode = GPIO_MODE_INPUT; cfg.pull_up_en = GPIO_PULLUP_ENABLE; }
+ *       else cfg.mode = GPIO_MODE_OUTPUT;
+ *       cfg.pin_bit_mask = 1ULL << pin;
+ *       return gpio_config(&cfg) == ESP_OK ? 0 : -1;
+ *   }
+ *   int fe_port_gpio_write(uint8_t pin, uint8_t level) {
+ *       return gpio_set_level(pin, level) == ESP_OK ? 0 : -1;
+ *   }
+ *   int fe_port_gpio_read(uint8_t pin) {
+ *       int v = gpio_get_level(pin); return v >= 0 ? v : -1;
+ *   }
+ *
+ *   // 芯片信息
+ *   #include "esp_chip_info.h"
+ *   #include "esp_flash.h"
+ *   void fe_port_chip_info(char *out, size_t l) {
+ *       esp_chip_info_t ci; esp_chip_info(&ci);
+ *       uint32_t flash = 0; esp_flash_get_size(NULL, &flash);
+ *       snprintf(out, l, "{\"chip\":\"%s\",\"cores\":%d,\"features\":\"0x%08x\",\"flashBytes\":%lu}",
+ *                CONFIG_IDF_TARGET, ci.cores, ci.features, (unsigned long)flash);
+ *   }
  *
  * ============================================================
  */

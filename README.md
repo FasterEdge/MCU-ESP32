@@ -140,6 +140,30 @@ pio device monitor # 串口监视
 
 > 与 `arduino/`（Arduino C++ 框架）不同，本版为 ESP-IDF 框架的纯 C 实现；串口命令格式完全一致。
 
+### 六-c、MCU 专有模块
+
+除主仓库对应能力外，本仓库提供 3 个 **MCU 专有** 模块（寄存器 / GPIO / 芯片信息），三套代码（arduino / keil / platformio_ide）完全同构，平台差异由 Arduino API 或 `fe_port` 原语隔离：
+
+| 模块 | 类型 | 命令 | 说明 |
+|------|------|------|------|
+| RegAbility | Ability | `read <addr>` / `write <addr>,<value>` / `bit_set <addr>,<bit>` / `bit_clear <addr>,<bit>` / `info` | 直接读写内存映射外设寄存器（32 位，volatile 指针）|
+| GpioAbility | Ability | `mode <pin>,<input\|output\|input_pullup>` / `write <pin>,<0\|1>` / `read <pin>` / `info` | 引脚模式 / 输出 / 读取 |
+| ChipData | Data | `info` | 芯片型号 / 内核数 / 频率 / 闪存（ESP-IDF `esp_chip_info`）|
+
+**示例：**
+
+```
+ability_RegAbility read 0x3FF44004
+ability_RegAbility write 0x3FF44004,0x12345678
+ability_RegAbility bit_set 0x3FF44004,7
+ability_GpioAbility mode 2,output
+ability_GpioAbility write 2,1
+ability_GpioAbility read 2
+data_ChipData info
+```
+
+> ⚠️ 寄存器操作直接访问硬件，误写可能导致系统异常，仅供调试/底层驱动使用。
+
 ### 七、与 FasterEdge 主仓库的对应关系
 
 - 命令名与主仓库 **完全一致**（如 `issue_token`、`sync_ntp`、`write_holding`）

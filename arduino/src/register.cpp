@@ -15,11 +15,14 @@ static SerialAbility     g_serialAbility;
 static MQTTAbility       g_mqttAbility;
 static ModbusAbility     g_modbusAbility;
 static EdgeRoleAbility   g_edgeRoleAbility;
+static RegAbility        g_regAbility;
+static GpioAbility       g_gpioAbility;
 
 static BaseData    g_baseData;
 static ConfigData  g_configData;
 static KeyringData g_keyringData;
 static NetMapData  g_netMapData;
+static ChipData    g_chipData;
 
 void registerAllData(Atom &atom) {
     static const CommandEntry baseDataCmds[] = {
@@ -48,11 +51,15 @@ void registerAllData(Atom &atom) {
         {"interfaces", netMapDataDispatch},
         {"set_default_iface", netMapDataDispatch},
     };
+    static const CommandEntry chipDataCmds[] = {
+        {"info", chipDataDispatch},
+    };
 
     atom.registerData({ "BaseData",    "框架元信息", baseDataCmds,    sizeof(baseDataCmds)/sizeof(baseDataCmds[0]),    &g_baseData,    baseDataDispatch });
     atom.registerData({ "ConfigData",  "扁平点号路径 KV 配置（NVS）", configDataCmds, sizeof(configDataCmds)/sizeof(configDataCmds[0]), &g_configData,  configDataDispatch });
     atom.registerData({ "KeyringData", "共享密钥与令牌表（NVS）", keyringDataCmds, sizeof(keyringDataCmds)/sizeof(keyringDataCmds[0]), &g_keyringData, keyringDataDispatch });
     atom.registerData({ "NetMapData",  "本节点网络信息", netMapDataCmds, sizeof(netMapDataCmds)/sizeof(netMapDataCmds[0]), &g_netMapData,  netMapDataDispatch });
+    atom.registerData({ "ChipData",    "芯片信息(MCU 专有)", chipDataCmds, sizeof(chipDataCmds)/sizeof(chipDataCmds[0]), &g_chipData,    chipDataDispatch });
 }
 
 void registerAllAbilities(Atom &atom) {
@@ -130,6 +137,19 @@ void registerAllAbilities(Atom &atom) {
         {"record_latency", edgeRoleAbilityDispatch},
         {"get_metrics", edgeRoleAbilityDispatch},
     };
+    static const CommandEntry regAbilityCmds[] = {
+        {"read", regAbilityDispatch},
+        {"write", regAbilityDispatch},
+        {"bit_set", regAbilityDispatch},
+        {"bit_clear", regAbilityDispatch},
+        {"info", regAbilityDispatch},
+    };
+    static const CommandEntry gpioAbilityCmds[] = {
+        {"mode", gpioAbilityDispatch},
+        {"write", gpioAbilityDispatch},
+        {"read", gpioAbilityDispatch},
+        {"info", gpioAbilityDispatch},
+    };
 
     atom.registerAbility({ "BaseAbility",       "基础",       baseAbilityCmds,       sizeof(baseAbilityCmds)/sizeof(baseAbilityCmds[0]),       &g_baseAbility,       baseAbilityDispatch });
     atom.registerAbility({ "RoleAbility",       "角色",       roleAbilityCmds,       sizeof(roleAbilityCmds)/sizeof(roleAbilityCmds[0]),       &g_roleAbility,       roleAbilityDispatch });
@@ -140,6 +160,8 @@ void registerAllAbilities(Atom &atom) {
     atom.registerAbility({ "MQTTAbility",       "MQTT",       mqttAbilityCmds,       sizeof(mqttAbilityCmds)/sizeof(mqttAbilityCmds[0]),       &g_mqttAbility,       mqttAbilityDispatch });
     atom.registerAbility({ "ModbusAbility",     "Modbus",     modbusAbilityCmds,     sizeof(modbusAbilityCmds)/sizeof(modbusAbilityCmds[0]),     &g_modbusAbility,     modbusAbilityDispatch });
     atom.registerAbility({ "EdgeRoleAbility",   "边缘角色",   edgeRoleAbilityCmds,   sizeof(edgeRoleAbilityCmds)/sizeof(edgeRoleAbilityCmds[0]),   &g_edgeRoleAbility,   edgeRoleAbilityDispatch });
+    atom.registerAbility({ "RegAbility",         "寄存器操作(专有)", regAbilityCmds,   sizeof(regAbilityCmds)/sizeof(regAbilityCmds[0]),           &g_regAbility,        regAbilityDispatch });
+    atom.registerAbility({ "GpioAbility",        "GPIO 控制(专有)", gpioAbilityCmds,  sizeof(gpioAbilityCmds)/sizeof(gpioAbilityCmds[0]),         &g_gpioAbility,       gpioAbilityDispatch });
 }
 
 void initAll() {

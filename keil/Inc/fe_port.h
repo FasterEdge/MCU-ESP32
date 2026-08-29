@@ -76,6 +76,22 @@ int fe_port_tcp_read(uint8_t *buf, size_t len);
 void fe_port_tcp_close(void);
 
 // ============================================================
+// GPIO（引脚控制）——GpioAbility 等需要
+// ============================================================
+// 设置引脚模式：mode ∈ "input" / "output" / "input_pullup"。成功返回 0
+int fe_port_gpio_set_mode(uint8_t pin, const char *mode);
+// 输出电平：level 0/1。成功返回 0
+int fe_port_gpio_write(uint8_t pin, uint8_t level);
+// 读取电平，返回 0/1；失败返回 -1
+int fe_port_gpio_read(uint8_t pin);
+
+// ============================================================
+// 芯片信息——ChipData 需要
+// ============================================================
+// 生成芯片信息 JSON 到 out
+void fe_port_chip_info(char *out, size_t outlen);
+
+// ============================================================
 // 延时（毫秒）
 // ============================================================
 void fe_port_delay_ms(uint32_t ms);

@@ -49,11 +49,15 @@ void fe_register_all_data(fe_atom_t *atom) {
         {"interfaces", data_netmap_dispatch},
         {"set_default_iface", data_netmap_dispatch},
     };
+    static const fe_cmd_t chipCmds[] = {
+        {"info", data_chip_dispatch},
+    };
 
     fe_register_data(atom, &(fe_module_t){"BaseData",   "框架元信息", baseCmds,   sizeof(baseCmds)/sizeof(baseCmds[0]),   NULL,               data_base_dispatch});
     fe_register_data(atom, &(fe_module_t){"ConfigData", "KV 配置(NVS)", configCmds, sizeof(configCmds)/sizeof(configCmds[0]), &g_config_data,  data_config_dispatch});
     fe_register_data(atom, &(fe_module_t){"KeyringData","密钥令牌表(NVS)", keyringCmds, sizeof(keyringCmds)/sizeof(keyringCmds[0]), &g_keyring_data, data_keyring_dispatch});
     fe_register_data(atom, &(fe_module_t){"NetMapData", "本节点网络信息", netmapCmds, sizeof(netmapCmds)/sizeof(netmapCmds[0]), &g_netmap_data,  data_netmap_dispatch});
+    fe_register_data(atom, &(fe_module_t){"ChipData",   "芯片信息(MCU 专有)", chipCmds, sizeof(chipCmds)/sizeof(chipCmds[0]), NULL,          data_chip_dispatch});
 }
 
 // ============================================================
@@ -134,6 +138,19 @@ void fe_register_all_abilities(fe_atom_t *atom) {
         {"record_latency", ability_edgerole_dispatch},
         {"get_metrics", ability_edgerole_dispatch},
     };
+    static const fe_cmd_t regCmds[] = {
+        {"read", ability_reg_dispatch},
+        {"write", ability_reg_dispatch},
+        {"bit_set", ability_reg_dispatch},
+        {"bit_clear", ability_reg_dispatch},
+        {"info", ability_reg_dispatch},
+    };
+    static const fe_cmd_t gpioCmds[] = {
+        {"mode", ability_gpio_dispatch},
+        {"write", ability_gpio_dispatch},
+        {"read", ability_gpio_dispatch},
+        {"info", ability_gpio_dispatch},
+    };
 
     fe_register_ability(atom, &(fe_module_t){"BaseAbility",       "基础",     baseCmds,       sizeof(baseCmds)/sizeof(baseCmds[0]),       NULL,            ability_base_dispatch});
     fe_register_ability(atom, &(fe_module_t){"RoleAbility",       "角色",     roleCmds,       sizeof(roleCmds)/sizeof(roleCmds[0]),       &g_role,         ability_role_dispatch});
@@ -144,6 +161,8 @@ void fe_register_all_abilities(fe_atom_t *atom) {
     fe_register_ability(atom, &(fe_module_t){"MQTTAbility",       "MQTT",     mqttCmds,       sizeof(mqttCmds)/sizeof(mqttCmds[0]),       &g_mqtt,         ability_mqtt_dispatch});
     fe_register_ability(atom, &(fe_module_t){"ModbusAbility",     "Modbus",   modbusCmds,     sizeof(modbusCmds)/sizeof(modbusCmds[0]),     &g_modbus,       ability_modbus_dispatch});
     fe_register_ability(atom, &(fe_module_t){"EdgeRoleAbility",   "边缘角色", edgeroleCmds,   sizeof(edgeroleCmds)/sizeof(edgeroleCmds[0]), &g_edgerole,     ability_edgerole_dispatch});
+    fe_register_ability(atom, &(fe_module_t){"RegAbility",        "寄存器操作(专有)", regCmds, sizeof(regCmds)/sizeof(regCmds[0]),     NULL,        ability_reg_dispatch});
+    fe_register_ability(atom, &(fe_module_t){"GpioAbility",       "GPIO 控制(专有)", gpioCmds, sizeof(gpioCmds)/sizeof(gpioCmds[0]),   NULL,        ability_gpio_dispatch});
 }
 
 // ============================================================

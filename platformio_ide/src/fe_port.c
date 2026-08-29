@@ -14,6 +14,7 @@
 #include <sys/time.h>
 
 #include "driver/uart.h"
+#include "driver/gpio.h"
 #include "nvs.h"
 #include "nvs_flash.h"
 #include "esp_sntp.h"
@@ -22,6 +23,8 @@
 #include "esp_netif.h"
 #include "esp_event.h"
 #include "esp_log.h"
+#include "esp_chip_info.h"
+#include "esp_flash.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -250,6 +253,47 @@ int fe_port_tcp_read(uint8_t *buf, size_t len) {
 
 void fe_port_tcp_close(void) {
     if (g_sock >= 0) { close(g_sock); g_sock = -1; }
+}
+
+// ============================================================
+// GPIO
+// ============================================================
+int fe_port_gpio_set_mode(uint8_t pin, const char *mode) {
+    gpio_config_t cfg = {0};
+    if (strcmp(mode, "input") == 0) {
+        cfg.mode = GPIO_MODE_INPUT;
+    } else if (strcmp(mode, "input_pullup") == 0) {
+        cfg.mode = GPIO_MODE_INPUT;
+        cfg.pull_up_en = GPIO_PULLUP_ENABLE;
+    } else if (strcmp(mode, "output") == 0) {
+        cfg.mode = GPIO_MODE_OUTPUT;
+    } else {
+        return -1;
+    }
+    cfg.pin_bit_mask = 1ULL << pin;
+    return gpio_config(&cfg) == ESP_OK ? 0 : -1;
+}
+
+int fe_port_gpio_write(uint8_t pin, uint8_t level) {
+    return gpio_set_level(pin, level) == ESP_OK ? 0 : -1;
+}
+
+int fe_port_gpio_read(uint8_t pin) {
+    int v = gpio_get_level(pin);
+    return v >= 0 ? v : -1;
+}
+
+// ============================================================
+// 芯片信息
+// ============================================================
+void fe_port_chip_info(char *out, size_t outlen) {
+    esp_chip_info_t ci;
+    uint32_t flash = 0;
+    esp_chip_info(&ci);
+    esp_flash_get_size(NULL, &flash);
+    snprintf(out, outlen,
+             "{\"chip\":\"%s\",\"cores\":%d,\"features\":\"0x%08x\",\"flashBytes\":%lu}",
+             CONFIG_IDF_TARGET, ci.cores, ci.features, (unsigned long)flash);
 }
 
 // ============================================================

@@ -117,6 +117,23 @@ struct EdgeRoleAbility {
 extern CommandOutput edgeRoleAbilityDispatch(void *inst, const char *act, const String &args);
 
 // ============================================================
+// RegAbility —— MCU 专有·寄存器操作：read / write / bit_set /
+//              bit_clear / info（直接访问内存映射外设寄存器）
+// ============================================================
+struct RegAbility {
+    CommandOutput dispatch(const char *act, const String &args);
+};
+extern CommandOutput regAbilityDispatch(void *inst, const char *act, const String &args);
+
+// ============================================================
+// GpioAbility —— MCU 专有·GPIO 控制：mode / write / read / info
+// ============================================================
+struct GpioAbility {
+    CommandOutput dispatch(const char *act, const String &args);
+};
+extern CommandOutput gpioAbilityDispatch(void *inst, const char *act, const String &args);
+
+// ============================================================
 // 注册全部 Ability
 // ============================================================
 void registerAllAbilities(Atom &atom);

@@ -103,6 +103,17 @@ typedef struct {
 fe_output_t ability_edgerole_dispatch(void *inst, const char *act, const char *args);
 
 // ============================================================
+// RegAbility —— MCU 专有·寄存器操作：read / write / bit_set /
+//               bit_clear / info
+// ============================================================
+fe_output_t ability_reg_dispatch(void *inst, const char *act, const char *args);
+
+// ============================================================
+// GpioAbility —— MCU 专有·GPIO 控制：mode / write / read / info
+// ============================================================
+fe_output_t ability_gpio_dispatch(void *inst, const char *act, const char *args);
+
+// ============================================================
 // 注册全部 Ability（register.c 调用）
 // ============================================================
 void fe_register_all_abilities(fe_atom_t *atom);
