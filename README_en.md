@@ -64,7 +64,15 @@ MCU-ESP32/
     ├── Ability/                # ability_*.c (9)
     ├── Data/                   # data_*.c (4)
     └── User/                   # main.c / register.c / fe_port.c
+
+platformio_ide/                # VS Code + PlatformIO plugin project (ESP-IDF framework)
+    ├── platformio.ini          # espressif32 / espidf / esp32dev
+    ├── .vscode/extensions.json # recommends PlatformIO IDE
+    ├── include/                # fe.h / fe_ability.h / fe_data.h / fe_port.h / fe_hmac_sha256.h
+    └── src/                    # reuses keil bare-metal C + real ESP-IDF fe_port
 ```
+
+> Three build routes, three toolchains: `arduino/` (Arduino C++), `keil/` (Keil MDK), `platformio_ide/` (VS Code PlatformIO plugin + ESP-IDF); same commands.
 
 ### 5. Arduino Version
 
@@ -102,6 +110,23 @@ data_NetMapData info
 3. Build, flash, and use the same command format over serial (115200)
 
 > Note: ESP32 uses the Xtensa core while Keil MDK mainly targets ARM Cortex-M. For Keil builds, replace the TODOs in `fe_port.c` with ESP-IDF APIs (a full reference snippet is included at the end of the file), or reuse this framework directly on other Cortex-M MCUs.
+
+### 6-b. PlatformIO IDE Version (VS Code plugin)
+
+`platformio_ide/` is a **bare-metal C + ESP-IDF framework** project that reuses the keil C code with a real ESP-IDF `fe_port.c` (UART/NVS/SNTP/random/WiFi/TCP). No Keil needed — build and flash right from VS Code.
+
+1. Install the **PlatformIO IDE** extension in VS Code (prompted when opening `platformio_ide/`)
+2. Open the `platformio_ide/` directory
+3. Click **Build** / **Upload** / **Serial Monitor** (115200) in the status bar
+
+```bash
+cd platformio_ide
+pio run            # build
+pio run -t upload  # flash
+pio device monitor # serial monitor
+```
+
+> Unlike `arduino/` (Arduino C++ framework), this version is a pure-C implementation on the ESP-IDF framework; serial commands are identical.
 
 ### 7. Correspondence with the Main Repo
 

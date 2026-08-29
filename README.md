@@ -75,7 +75,15 @@ MCU-ESP32/
     ├── Ability/                # ability_*.c（9 个）
     ├── Data/                   # data_*.c（4 个）
     └── User/                   # main.c / register.c / fe_port.c
+
+platformio_ide/                # VS Code + PlatformIO 插件工程（ESP-IDF 框架）
+    ├── platformio.ini          # espressif32 / espidf / esp32dev
+    ├── .vscode/extensions.json # 推荐 PlatformIO IDE 插件
+    ├── include/                # fe.h / fe_ability.h / fe_data.h / fe_port.h / fe_hmac_sha256.h
+    └── src/                    # 复用 keil 裸机 C + ESP-IDF 版 fe_port（真实实现）
 ```
+
+> 三个构建途径对应三个工具链：`arduino/`（Arduino C++）、`keil/`（Keil MDK）、`platformio_ide/`（VS Code PlatformIO 插件 + ESP-IDF），能力与命令完全一致。
 
 ### 五、Arduino 版使用
 
@@ -114,6 +122,23 @@ data_NetMapData info
 3. 编译烧录，通过串口（115200）输入同样格式的命令
 
 > 说明：ESP32 为 Xtensa 内核，Keil MDK 主要面向 ARM Cortex-M。若在 Keil 中编译，可将 `fe_port.c` 的 TODO 替换为 ESP-IDF API（文件末尾附完整参考片段），或在其他 Cortex-M MCU 上直接复用本框架。
+
+### 六-b、PlatformIO IDE 版使用（VS Code 插件）
+
+`platformio_ide/` 是 **裸机 C + ESP-IDF 框架** 工程，复用 keil 版 C 代码，`fe_port.c` 为真实 ESP-IDF 实现（UART/NVS/SNTP/随机/WiFi/TCP），无需 Keil 即可在 VS Code 中编译烧录。
+
+1. VS Code 安装 **PlatformIO IDE** 插件（打开 `platformio_ide/` 时自动提示）
+2. 打开 `platformio_ide/` 目录
+3. 底部状态栏点击 **Build** / **Upload** / **Serial Monitor**（115200）
+
+```bash
+cd platformio_ide
+pio run            # 编译
+pio run -t upload  # 烧录
+pio device monitor # 串口监视
+```
+
+> 与 `arduino/`（Arduino C++ 框架）不同，本版为 ESP-IDF 框架的纯 C 实现；串口命令格式完全一致。
 
 ### 七、与 FasterEdge 主仓库的对应关系
 
