@@ -123,7 +123,7 @@ data_NetMapData info
 
 > 说明：ESP32 为 Xtensa 内核，Keil MDK 主要面向 ARM Cortex-M。若在 Keil 中编译，可将 `fe_port.c` 的 TODO 替换为 ESP-IDF API（文件末尾附完整参考片段），或在其他 Cortex-M MCU 上直接复用本框架。
 
-### 六-b、PlatformIO IDE 版使用（VS Code 插件）
+### 七、PlatformIO IDE 版使用（VS Code 插件）
 
 `platformio_ide/` 是 **裸机 C + ESP-IDF 框架** 工程，复用 keil 版 C 代码，`fe_port.c` 为真实 ESP-IDF 实现（UART/NVS/SNTP/随机/WiFi/TCP），无需 Keil 即可在 VS Code 中编译烧录。
 
@@ -140,7 +140,7 @@ pio device monitor # 串口监视
 
 > 与 `arduino/`（Arduino C++ 框架）不同，本版为 ESP-IDF 框架的纯 C 实现；串口命令格式完全一致。
 
-### 六-c、MCU 专有模块
+### 八、MCU 专有模块
 
 除主仓库对应能力外，本仓库提供 3 个 **MCU 专有** 模块（寄存器 / GPIO / 芯片信息），三套代码（arduino / keil / platformio_ide）完全同构，平台差异由 Arduino API 或 `fe_port` 原语隔离：
 
@@ -164,7 +164,7 @@ data_ChipData info
 
 > ⚠️ 寄存器操作直接访问硬件，误写可能导致系统异常，仅供调试/底层驱动使用。
 
-### 七、与 FasterEdge 主仓库的对应关系
+### 九、与 FasterEdge 主仓库的对应关系
 
 - 命令名与主仓库 **完全一致**（如 `issue_token`、`sync_ntp`、`write_holding`）
 - `Atom` 模型简化：主仓库的多实例 Atom → MCU 单例全局 Atom

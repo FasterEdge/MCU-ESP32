@@ -111,7 +111,7 @@ data_NetMapData info
 
 > Note: ESP32 uses the Xtensa core while Keil MDK mainly targets ARM Cortex-M. For Keil builds, replace the TODOs in `fe_port.c` with ESP-IDF APIs (a full reference snippet is included at the end of the file), or reuse this framework directly on other Cortex-M MCUs.
 
-### 6-b. PlatformIO IDE Version (VS Code plugin)
+### 7. PlatformIO IDE Version (VS Code plugin)
 
 `platformio_ide/` is a **bare-metal C + ESP-IDF framework** project that reuses the keil C code with a real ESP-IDF `fe_port.c` (UART/NVS/SNTP/random/WiFi/TCP). No Keil needed — build and flash right from VS Code.
 
@@ -128,7 +128,7 @@ pio device monitor # serial monitor
 
 > Unlike `arduino/` (Arduino C++ framework), this version is a pure-C implementation on the ESP-IDF framework; serial commands are identical.
 
-### 6-c. MCU-Specific Modules
+### 8. MCU-Specific Modules
 
 Beyond the main-repo capabilities, this repo adds 3 **MCU-specific** modules (registers / GPIO / chip info), identical across all three builds (arduino / keil / platformio_ide); platform differences are isolated behind the Arduino API or `fe_port` primitives:
 
@@ -152,7 +152,7 @@ data_ChipData info
 
 > ⚠️ Register access touches hardware directly; a wrong write may crash the system. Debug/low-level use only.
 
-### 7. Correspondence with the Main Repo
+### 9. Correspondence with the Main Repo
 
 - Command names are **identical** to the main repo (e.g. `issue_token`, `sync_ntp`, `write_holding`)
 - `Atom` model simplified: multi-instance Atom → MCU singleton global Atom
