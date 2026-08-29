@@ -1,0 +1,76 @@
+# ============================================
+# ESP8266 嵌入式项目（Arduino / PlatformIO / ESP-IDF）
+# ============================================
+
+# Arduino
+*.ino.user
+*.ino.bak
+/build/
+/ArduinoOutput/
+
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+.vscode/extensions.json
+
+# ESP-IDF
+/build/
+/sdkconfig
+/sdkconfig.old
+/managed_components/
+/dependencies.lock
+
+# 编译产物
+*.o
+*.obj
+*.elf
+*.bin
+*.map
+*.a
+*.lib
+*.out
+*.d
+*.su
+
+# ============================================
+# OS / Editor / IDE 噪音
+# ============================================
+
+# macOS Finder
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows Explorer
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+
+# Linux trash
+.Trash-*
+
+# Editors / IDE
+*~
+*.swp
+*.swo
+*.bak
+*.tmp
+.vscode/
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+
+# Logs / runtime
+*.log
+logs/
+tmp/
+temp/
+
+# Git worktrees
+.worktrees/
