@@ -43,6 +43,7 @@ fe_output_t ability_modbus_dispatch(void *inst, const char *act, const char *arg
         if (comma) count = atoi(comma + 1);
     }
     if (addr < 0 || count < 0) return fe_err(act, "bad args");
+    if (count > 42) return fe_err(act, "count too large");
 
     if (strcmp(act, "read_holding") == 0) {
         if (addr + count > 64) return fe_err(act, "addr out of range");
