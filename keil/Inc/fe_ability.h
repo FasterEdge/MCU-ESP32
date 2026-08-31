@@ -38,7 +38,7 @@ fe_output_t ability_time_dispatch(void *inst, const char *act, const char *args)
 // （HMAC-SHA256，密钥存于 fe_port NVS）
 // ============================================================
 typedef struct {
-    char secret[33];    // HMAC 密钥（NVS 持久化）
+    char secret[65];    // 32-byte HMAC 密钥的十六进制表示（NVS 持久化）
     uint32_t seq;       // 令牌序列
 } onekey_ability_t;
 fe_output_t ability_onekey_dispatch(void *inst, const char *act, const char *args);
@@ -71,9 +71,17 @@ fe_output_t ability_serial_dispatch(void *inst, const char *act, const char *arg
 typedef struct {
     char broker[128];
     char client_id[48];
-    char subs[4][64];   // 订阅主题表（简化固定 4 条）
+    char subs[4][64];
     uint8_t sub_count;
     bool connected;
+    uint16_t next_packet_id;
+    uint16_t last_packet_id;
+    uint8_t last_event;
+    uint8_t rx_buf[768];
+    size_t rx_len;
+    char last_topic[128];
+    char last_payload[256];
+    size_t last_payload_len;
 } mqtt_ability_t;
 fe_output_t ability_mqtt_dispatch(void *inst, const char *act, const char *args);
 
@@ -89,6 +97,8 @@ typedef struct {
     bool     discrete_inputs[64];
 } modbus_ability_t;
 fe_output_t ability_modbus_dispatch(void *inst, const char *act, const char *args);
+// 处理一个完整 Modbus RTU ADU（req 含地址、功能码、PDU、CRC），并通过 fe_port_uart_write(0, ...) 回写响应。
+void modbus_slave_service(modbus_ability_t *self, const uint8_t *req, size_t len);
 
 // ============================================================
 // EdgeRoleAbility —— describe / set_zone / set_status / set_online /

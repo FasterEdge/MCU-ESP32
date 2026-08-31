@@ -1,7 +1,7 @@
 // fe_port.c — FasterEdge MCU 平台移植层（ESP32 / ESP-IDF 版）
 // 用于 platformio_ide 工程（VS Code + PlatformIO 插件）：
 //   platform = espressif32, framework = espidf
-// 本文件是 keil 版 TODO 移植层的真实实现：
+// 本文件是 keil 版移植模板对应的真实实现：
 //   UART  -> driver/uart.h
 //   NVS   -> nvs_flash.h / nvs.h（key 规范化，兼容点号路径）
 //   时间   -> gettimeofday + esp_sntp

@@ -29,11 +29,19 @@ extern CommandOutput roleAbilityDispatch(void *inst, const char *act, const Stri
 //               sync_ntp / get_time / configure_run
 // ============================================================
 struct TimeAbility {
-    long manualEpoch;   // 手动设定的时间（epoch 秒）
-    TimeAbility() : manualEpoch(0) {}
+    time_t manualEpoch;       // 手动设定的时间（epoch 秒）
+    bool runEnabled;          // 周期 NTP 是否启用
+    bool runStateLoaded;      // 持久化配置是否已加载
+    uint32_t runIntervalSec;  // 周期间隔（秒）
+    uint32_t nextRunMs;       // millis() 调度时刻
+    String ntpServer;
+    TimeAbility() : manualEpoch(0), runEnabled(false), runStateLoaded(false),
+                    runIntervalSec(3600), nextRunMs(0), ntpServer("pool.ntp.org") {}
     CommandOutput dispatch(const char *act, const String &args);
 };
 extern CommandOutput timeAbilityDispatch(void *inst, const char *act, const String &args);
+extern void timeAbilityTick(TimeAbility &self, uint32_t nowMs);
+extern void runTimeAbilityTick(uint32_t nowMs);
 
 // ============================================================
 // OneKeyAbility —— 一键令牌：issue_token / verify_token /

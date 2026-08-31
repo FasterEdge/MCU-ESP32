@@ -1,112 +1,26 @@
-// ability_onekey.c — OneKeyAbility 实现（Keil/裸机 C 版）
-// issue_token / verify_token / revoke_token / revoke_all / list_tokens / status / rotate
-// 令牌 = HMAC-SHA256(secret, "seq:subject")，base64url 呈现。
+// ability_onekey.c — portable OneKey registry/revocation implementation.
 #include "fe_ability.h"
 #include "fe_hmac_sha256.h"
 #include "fe_port.h"
 
-static const char *B64URL_TBL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+#define OK_NS "fe_onekey"
+#define OK_REG "tokens"
+#define OK_REG_CAP 224
+static const char B64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
-static void b64url_encode(const uint8_t *data, size_t len, char *out, size_t outlen) {
-    size_t n = 0;
-    for (size_t i = 0; i + 2 < len && n + 4 < outlen; i += 3) {
-        uint32_t v = ((uint32_t)data[i] << 16) | ((uint32_t)data[i+1] << 8) | data[i+2];
-        out[n++] = B64URL_TBL[(v >> 18) & 63];
-        out[n++] = B64URL_TBL[(v >> 12) & 63];
-        out[n++] = B64URL_TBL[(v >> 6) & 63];
-        out[n++] = B64URL_TBL[v & 63];
-    }
-    if (len % 3 == 1 && n + 2 <= outlen) {
-        uint32_t v = (uint32_t)data[len-1] << 16;
-        out[n++] = B64URL_TBL[(v >> 18) & 63];
-        out[n++] = B64URL_TBL[(v >> 12) & 63];
-    } else if (len % 3 == 2 && n + 3 <= outlen) {
-        uint32_t v = ((uint32_t)data[len-2] << 16) | ((uint32_t)data[len-1] << 8);
-        out[n++] = B64URL_TBL[(v >> 18) & 63];
-        out[n++] = B64URL_TBL[(v >> 12) & 63];
-        out[n++] = B64URL_TBL[(v >> 6) & 63];
-    }
-    if (n < outlen) out[n] = 0;
-}
+static void b64(const uint8_t*d,size_t l,char*o,size_t c){size_t n=0,i=0;while(i+2<l&&n+4<c){uint32_t v=((uint32_t)d[i]<<16)|((uint32_t)d[i+1]<<8)|d[i+2];o[n++]=B64[v>>18];o[n++]=B64[(v>>12)&63];o[n++]=B64[(v>>6)&63];o[n++]=B64[v&63];i+=3;}if(i<l&&n+2<c){uint32_t v=(uint32_t)d[i]<<16;o[n++]=B64[v>>18];o[n++]=B64[(v>>12)&63];if(i+1<l&&n+1<c){v|=(uint32_t)d[i+1]<<8;o[n++]=B64[(v>>6)&63];}}o[n]=0;}
+static void new_secret(char*out){static const char h[]="0123456789abcdef";uint8_t r[32];fe_port_random_fill(r,sizeof(r));for(size_t i=0;i<32;i++){out[i*2]=h[r[i]>>4];out[i*2+1]=h[r[i]&15];}out[64]=0;}
+static bool load(onekey_ability_t*s){if(!fe_port_nvs_get_str(OK_NS,"secret",s->secret,sizeof(s->secret))||strlen(s->secret)!=64){new_secret(s->secret);if(!fe_port_nvs_set_str(OK_NS,"secret",s->secret))return false;}if(!fe_port_nvs_get_u32(OK_NS,"seq",&s->seq))s->seq=0;return true;}
+static bool subject_ok(const char*s){size_t n=s?strlen(s):0;if(!n||n>40)return false;for(size_t i=0;i<n;i++)if((unsigned char)s[i]<32||s[i]=='|'||s[i]=='\n'||s[i]=='\r')return false;return true;}
+static void token(const onekey_ability_t*s,uint32_t id,const char*sub,char*out){char p[64];uint8_t mac[32];snprintf(p,sizeof(p),"%lu:%s",(unsigned long)id,sub);fe_hmac_sha256((const uint8_t*)s->secret,strlen(s->secret),(const uint8_t*)p,strlen(p),mac);b64(mac,sizeof(mac),out,48);}
+static bool ct_eq(const char*a,const char*b){size_t al=strlen(a),bl=strlen(b),m=al>bl?al:bl;unsigned d=(unsigned)(al^bl);for(size_t i=0;i<m;i++)d|=(i<al?(unsigned char)a[i]:0)^(i<bl?(unsigned char)b[i]:0);return d==0;}
+static int record(char*reg,uint32_t id,char**sub,char**rev){char*p=reg;while(*p){char*e=strchr(p,'\n');if(e)*e=0;char*a=strchr(p,'|'),*b=a?strchr(a+1,'|'):NULL;if(a&&b){*a=0;*b=0;if(strtoul(p,NULL,10)==id){*sub=a+1;*rev=b+1;return 1;}}if(!e)break;p=e+1;}return 0;}
 
-static void load_or_create_secret(onekey_ability_t *self) {
-    if (!fe_port_nvs_get_str("fe_onekey", "secret", self->secret, sizeof(self->secret))) {
-        fe_port_random_fill((uint8_t *)self->secret, 32);
-        self->secret[32] = 0;
-        fe_port_nvs_set_str("fe_onekey", "secret", self->secret);
-    }
-    fe_port_nvs_get_u32("fe_onekey", "seq", &self->seq);
-}
-
-static void persist_seq(onekey_ability_t *self) {
-    fe_port_nvs_set_u32("fe_onekey", "seq", self->seq);
-}
-
-fe_output_t ability_onekey_dispatch(void *inst, const char *act, const char *args) {
-    onekey_ability_t *self = (onekey_ability_t *)inst;
-    if (self->secret[0] == 0) load_or_create_secret(self);
-    const char *subject = (args && args[0]) ? args : "default";
-
-    if (strcmp(act, "status") == 0) {
-        char out[64];
-        snprintf(out, sizeof(out), "{\"tokens\":%lu}", (unsigned long)(self->seq + 1));
-        return fe_ok(act, out);
-    }
-    if (strcmp(act, "issue_token") == 0) {
-        char payload[64];
-        uint8_t mac[32];
-        snprintf(payload, sizeof(payload), "%lu:%s", (unsigned long)self->seq, subject);
-        fe_hmac_sha256((const uint8_t *)self->secret, strlen(self->secret),
-                       (const uint8_t *)payload, strlen(payload), mac);
-        char tok[64];
-        b64url_encode(mac, 32, tok, sizeof(tok));
-        char out[128];
-        snprintf(out, sizeof(out), "{\"token\":\"%s\",\"seq\":%lu}", tok, (unsigned long)self->seq);
-        self->seq++;
-        persist_seq(self);
-        return fe_ok(act, out);
-    }
-    if (strcmp(act, "verify_token") == 0) {
-        // 期望 args = "seq:token:subject"
-        char buf[256];
-        snprintf(buf, sizeof(buf), "%s", args ? args : "");
-        char *colon1 = strchr(buf, ':');
-        if (!colon1) return fe_err(act, "bad format, expect seq:token");
-        *colon1 = 0;
-        char *tok = colon1 + 1;
-        char *colon2 = strchr(tok, ':');
-        const char *subj = subject;
-        if (colon2) { *colon2 = 0; subj = colon2 + 1; }
-        unsigned long seq = strtoul(buf, NULL, 10);
-        char payload[64];
-        uint8_t mac[32];
-        snprintf(payload, sizeof(payload), "%lu:%s", seq, subj);
-        fe_hmac_sha256((const uint8_t *)self->secret, strlen(self->secret),
-                       (const uint8_t *)payload, strlen(payload), mac);
-        char expect[64];
-        b64url_encode(mac, 32, expect, sizeof(expect));
-        bool ok = (strcmp(expect, tok) == 0);
-        char out[64];
-        snprintf(out, sizeof(out), "{\"valid\":%s}", ok ? "true" : "false");
-        return ok ? fe_ok(act, out) : fe_err(act, "token invalid");
-    }
-    if (strcmp(act, "revoke_token") == 0 || strcmp(act, "revoke_all") == 0) {
-        // TODO: 引入黑名单后实现真正吊销；当前重置序列使旧令牌失效
-        self->seq = 0;
-        persist_seq(self);
-        return fe_ok(act, "{\"revoked\":true}");
-    }
-    if (strcmp(act, "list_tokens") == 0) {
-        // TODO: 维护令牌登记表后返回全部未吊销令牌
-        return fe_ok(act, "{\"tokens\":[]}");
-    }
-    if (strcmp(act, "rotate") == 0) {
-        fe_port_nvs_remove("fe_onekey", "secret");
-        self->secret[0] = 0;
-        load_or_create_secret(self);
-        self->seq = 0;
-        persist_seq(self);
-        return fe_ok(act, "{\"rotated\":true}");
-    }
-    return fe_err(act, "unsupported command");
-}
+fe_output_t ability_onekey_dispatch(void*inst,const char*act,const char*args){onekey_ability_t*s=(onekey_ability_t*)inst;char reg[OK_REG_CAP]={0};if(!load(s))return fe_err(act,"token store unavailable");(void)fe_port_nvs_get_str(OK_NS,OK_REG,reg,sizeof(reg));
+ if(!strcmp(act,"status")||!strcmp(act,"list_tokens")){unsigned active=0,total=0;char copy[OK_REG_CAP];snprintf(copy,sizeof(copy),"%s",reg);for(char*p=strtok(copy,"\n");p;p=strtok(NULL,"\n")){char*a=strchr(p,'|'),*b=a?strchr(a+1,'|'):NULL;if(a&&b){total++;if(b[1]=='0')active++;}}if(!strcmp(act,"status")){char o[96];snprintf(o,sizeof(o),"{\"active\":%u,\"registered\":%u,\"next_seq\":%lu}",active,total,(unsigned long)s->seq);return fe_ok(act,o);}char o[256]="{\"tokens\":[";size_t n=strlen(o);snprintf(copy,sizeof(copy),"%s",reg);bool first=true;for(char*p=strtok(copy,"\n");p;p=strtok(NULL,"\n")){char*a=strchr(p,'|'),*b=a?strchr(a+1,'|'):NULL;if(!a||!b)continue;*a=0;*b=0;int w=snprintf(o+n,sizeof(o)-n,"%s{\"seq\":%s,\"subject\":\"%s\",\"revoked\":%s}",first?"":",",p,a+1,b[1]=='1'?"true":"false");if(w<0||(size_t)w>=sizeof(o)-n)return fe_err(act,"token list too large");n+=(size_t)w;first=false;}snprintf(o+n,sizeof(o)-n,"]}");return fe_ok(act,o);}
+ if(!strcmp(act,"issue_token")){const char*sub=args&&args[0]?args:"default";if(!subject_ok(sub)||s->seq==UINT32_MAX)return fe_err(act,"invalid subject or sequence exhausted");char line[64];int w=snprintf(line,sizeof(line),"%s%lu|%s|0",reg[0]?"\n":"",(unsigned long)s->seq,sub);if(w<0||strlen(reg)+(size_t)w>=sizeof(reg))return fe_err(act,"token registry full");strcat(reg,line);uint32_t id=s->seq++;if(!fe_port_nvs_set_str(OK_NS,OK_REG,reg)||!fe_port_nvs_set_u32(OK_NS,"seq",s->seq))return fe_err(act,"token persistence failed");char t[48],o[160];token(s,id,sub,t);snprintf(o,sizeof(o),"{\"token\":\"%s\",\"seq\":%lu,\"subject\":\"%s\"}",t,(unsigned long)id,sub);return fe_ok(act,o);}
+ if(!strcmp(act,"verify_token")){char in[160];snprintf(in,sizeof(in),"%s",args?args:"");char*a=strchr(in,':'),*b=a?strchr(a+1,':'):NULL;if(!a||!b)return fe_err(act,"expect seq:subject:token");*a=0;*b=0;char*end;unsigned long id=strtoul(in,&end,10);if(*end)return fe_err(act,"invalid sequence");char work[OK_REG_CAP],*sub=NULL,*rev=NULL;snprintf(work,sizeof(work),"%s",reg);bool known=record(work,(uint32_t)id,&sub,&rev);char exp[48];token(s,(uint32_t)id,a+1,exp);bool ok=known&&rev[0]=='0'&&!strcmp(sub,a+1)&&ct_eq(exp,b+1);return ok?fe_ok(act,"{\"valid\":true}"):fe_err(act,"token invalid or revoked");}
+ if(!strcmp(act,"revoke_token")){char*end;unsigned long id=strtoul(args?args:"",&end,10);if(!args||!*args||*end)return fe_err(act,"expect sequence id");char out[OK_REG_CAP]={0},copy[OK_REG_CAP];snprintf(copy,sizeof(copy),"%s",reg);bool found=false;for(char*p=strtok(copy,"\n");p;p=strtok(NULL,"\n")){char*a=strchr(p,'|'),*b=a?strchr(a+1,'|'):NULL;if(a&&b&&strtoul(p,NULL,10)==id){b[1]='1';found=true;}if(out[0])strcat(out,"\n");if(strlen(out)+strlen(p)>=sizeof(out))return fe_err(act,"registry corrupt");strcat(out,p);}if(!found)return fe_err(act,"token not found");if(!fe_port_nvs_set_str(OK_NS,OK_REG,out))return fe_err(act,"revocation persistence failed");return fe_ok(act,"{\"revoked\":true}");}
+ if(!strcmp(act,"revoke_all")){if(!fe_port_nvs_remove(OK_NS,OK_REG))return fe_err(act,"revoke failed");return fe_ok(act,"{\"revoked\":true}");}
+ if(!strcmp(act,"rotate")){new_secret(s->secret);if(!fe_port_nvs_set_str(OK_NS,"secret",s->secret)||!fe_port_nvs_remove(OK_NS,OK_REG))return fe_err(act,"rotate failed");return fe_ok(act,"{\"rotated\":true}");}
+ return fe_err(act,"unsupported command");}

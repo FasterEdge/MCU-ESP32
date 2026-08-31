@@ -48,6 +48,7 @@ void printHelp() {
 }
 
 void loop() {
+    runTimeAbilityTick(millis());
     while (Serial.available()) {
         char c = Serial.read();
         if (c == '\n') {

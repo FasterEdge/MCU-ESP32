@@ -87,8 +87,27 @@ CommandOutput keyringDataDispatch(void *inst, const char *act, const String &arg
             String("{\"token\":\"") + b64url(mac, 32) + "\",\"seq\":" + seq + "}", String()};
     }
     if (strcmp(act, "list_tokens") == 0) {
-        // TODO: 维护令牌登记表后返回全部未吊销令牌
-        return CommandOutput{String(act), String("{\"tokens\":[]}"), String()};
+        Preferences registry;
+        if (!registry.begin("fe_onekey", true))
+            return CommandOutput{String(act), String(), String("failed to open token registry")};
+        String encoded = registry.getString("tokens", "");
+        registry.end();
+        String out = "{\"tokens\":[";
+        int start = 0; bool first = true;
+        while (start < (int)encoded.length()) {
+            int end = encoded.indexOf('\n', start); if (end < 0) end = encoded.length();
+            String line = encoded.substring(start, end);
+            int p1 = line.indexOf('|'), p2 = line.indexOf('|', p1 + 1);
+            if (p1 > 0 && p2 > p1) {
+                if (!first) out += ','; first = false;
+                out += "{\"seq\":" + line.substring(0, p1) + ",\"subject\":\"";
+                String subject = line.substring(p1 + 1, p2); subject.replace("\\", "\\\\"); subject.replace("\"", "\\\"");
+                out += subject + "\",\"revoked\":" + (line.substring(p2 + 1) == "1" ? "true" : "false") + "}";
+            }
+            start = end + 1;
+        }
+        out += "]}";
+        return CommandOutput{String(act), out, String()};
     }
     if (strcmp(act, "revoke_token") == 0 || strcmp(act, "revoke_all") == 0) {
         Preferences prefs;

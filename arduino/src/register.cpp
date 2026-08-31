@@ -24,6 +24,10 @@ static KeyringData g_keyringData;
 static NetMapData  g_netMapData;
 static ChipData    g_chipData;
 
+void runTimeAbilityTick(uint32_t nowMs) {
+    timeAbilityTick(g_timeAbility, nowMs);
+}
+
 void registerAllData(Atom &atom) {
     static const CommandEntry baseDataCmds[] = {
         {"logo", baseDataDispatch},
