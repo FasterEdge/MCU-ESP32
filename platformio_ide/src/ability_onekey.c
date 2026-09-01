@@ -1,3 +1,8 @@
+// ─────────────────────────────────────────────────────────────
+// FasterEdge 开源项目
+// Github: https://github.com/FasterEdge
+// Gitee:  https://gitee.com/FasterEdge
+// ─────────────────────────────────────────────────────────────
 // ability_onekey.c — portable OneKey registry/revocation implementation.
 #include "fe_ability.h"
 #include "fe_hmac_sha256.h"

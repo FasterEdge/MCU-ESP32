@@ -1,3 +1,8 @@
+// ─────────────────────────────────────────────────────────────
+// FasterEdge 开源项目
+// Github: https://github.com/FasterEdge
+// Gitee:  https://gitee.com/FasterEdge
+// ─────────────────────────────────────────────────────────────
 // ability_base.c — BaseAbility 实现（Keil/裸机 C 版）
 // list_data_names / list_ability_names
 #include "fe_ability.h"

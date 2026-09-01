@@ -1,3 +1,8 @@
+// ─────────────────────────────────────────────────────────────
+// FasterEdge 开源项目
+// Github: https://github.com/FasterEdge
+// Gitee:  https://gitee.com/FasterEdge
+// ─────────────────────────────────────────────────────────────
 // ability_configfile.c — ConfigFileAbility 实现（Keil/裸机 C 版）
 // load / save / set_path / get_path / exists
 #include "fe_ability.h"
