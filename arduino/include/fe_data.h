@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // fe_data.h — FasterEdge MCU Data 模块声明（Arduino 版）
 // 对应 FasterEdge 主仓库 data/ 下在 ESP32 上合理的子集
 #pragma once

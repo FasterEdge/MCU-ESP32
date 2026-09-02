@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // ability_mqtt.cpp — MQTTAbility 实现（Arduino 版）
 // set_broker / connect / disconnect / publish / subscribe / unsubscribe /
 // is_connected / list_subscriptions / drain

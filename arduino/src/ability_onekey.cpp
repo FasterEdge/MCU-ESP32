@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // ability_onekey.cpp — OneKeyAbility 实现（Arduino 版）
 // issue_token / verify_token / revoke_token / revoke_all / list_tokens / status / rotate
 #include "fe_ability.h"

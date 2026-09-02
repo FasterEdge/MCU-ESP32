@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // ability_modbus.cpp — ModbusAbility 实现（Arduino 版）
 // set_unit_id / read_holding / read_input / read_coils / read_discrete /
 // write_holding / write_coil

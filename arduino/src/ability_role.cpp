@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // ability_role.cpp — RoleAbility 实现（Arduino 版）
 // describe / set_role / get_role
 #include "fe_ability.h"

@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // fe.cpp — FasterEdge MCU 核心框架实现（Arduino 版）
 #include "fe.h"
 

@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // ability_edgerole.c — EdgeRoleAbility 实现（Keil/裸机 C 版，简化）
 // describe / set_zone / get_zone / set_status / get_status /
 // set_online / record_latency / get_metrics

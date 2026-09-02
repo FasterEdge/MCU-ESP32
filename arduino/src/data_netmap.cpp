@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // data_netmap.cpp — NetMapData 实现（Arduino 版）
 // 本节点网络信息：info / set_node_name / interfaces / set_default_iface
 #include "fe_data.h"

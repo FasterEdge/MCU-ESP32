@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // ability_modbus.c — ModbusAbility 实现（Keil/裸机 C 版）
 // set_unit_id / get_unit_id / read_holding / read_input / read_coils /
 // read_discrete / write_holding / write_coil

@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // ability_reg.c — RegAbility 实现（Keil/裸机 C 版，MCU 专有）
 // MCU 专有能力：直接读写内存映射外设寄存器。
 //   read <addr>           读 32 位寄存器，addr 为十六进制地址（如 0x3FF44004）

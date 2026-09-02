@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // ability_serial.cpp — SerialAbility 实现（Arduino 版）
 // open / close / write / read / is_open / set_config / get_config / list_ports
 // ESP32 Arduino 的 Serial 由 HardwareSerial 提供；此处用 HWCDC/USB 或 UART 说明。

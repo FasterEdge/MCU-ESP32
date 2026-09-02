@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // fe_hmac_sha256.h — HMAC-SHA256 纯 C 实现（零依赖）
 // 供 Arduino / Keil / 裸机版本共用，避免依赖平台 mbedTLS。
 #ifndef FE_HMAC_SHA256_H

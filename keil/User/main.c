@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // main.c — FasterEdge MCU Keil/裸机 C 入口（ESP32）
 // 串口命令解释器：输入 "data_xxx act args" / "ability_xxx act args"
 // 示例：

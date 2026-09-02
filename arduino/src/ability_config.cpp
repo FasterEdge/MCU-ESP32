@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // ability_config.cpp — ConfigFileAbility 实现（Arduino 版）
 // load / save / set_path / get_path / exists; explicit registry supports full snapshots.
 #include "fe_ability.h"

@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // fe.h — FasterEdge MCU 核心框架（Arduino 版）
 // 模仿 FasterEdge 主仓库的 Atom / Ability / Data / Command 模型
 // 平台：ESP32 (Arduino core / PlatformIO)

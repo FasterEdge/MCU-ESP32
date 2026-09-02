@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // ability_time.cpp — TimeAbility 实现（Arduino 版）
 // sync_net / sync_manual / sync_system / sync_ntp / get_time / configure_run
 #include "fe_ability.h"

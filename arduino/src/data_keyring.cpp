@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // data_keyring.cpp — KeyringData 实现（Arduino 版）
 // 共享密钥与令牌表：status / set_secret / rotate / list_tokens /
 // issue_token / revoke_token / revoke_all

@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // data_base.cpp — BaseData 实现（Arduino 版）
 // logo / info
 #include "fe_data.h"

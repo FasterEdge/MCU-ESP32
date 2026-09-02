@@ -1,3 +1,4 @@
+// FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
 // ability_edge_role.cpp — EdgeRoleAbility 实现（Arduino 版，简化）
 // describe / set_zone / get_zone / set_status / get_status /
 // set_online / record_latency / get_metrics
