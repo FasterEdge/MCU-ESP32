@@ -2,6 +2,7 @@
 // configure_run 保存周期校时配置；实际调度器可读取该状态后调用 sync_ntp。
 #include "fe_ability.h"
 #include "fe_port.h"
+#include <errno.h>
 
 #define TIME_NS "fe_time"
 
@@ -13,8 +14,9 @@ fe_output_t ability_time_dispatch(void *inst, const char *act, const char *args)
     }
     if (strcmp(act, "sync_manual") == 0) {
         if (!args || !args[0]) return fe_err(act, "missing epoch");
+        errno = 0;
         char *end = NULL; unsigned long long ep = strtoull(args, &end, 10);
-        if (ep == 0 || !end || *end) return fe_err(act, "invalid epoch");
+        if (errno == ERANGE || ep == 0 || !end || *end) return fe_err(act, "invalid epoch");
         fe_port_time_set(ep); self->manual_epoch = ep;
         char out[64]; snprintf(out, sizeof(out), "epoch=%llu", ep); return fe_ok(act, out);
     }

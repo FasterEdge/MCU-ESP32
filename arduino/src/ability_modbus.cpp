@@ -49,7 +49,7 @@ CommandOutput modbusAbilityDispatch(void *inst, const char *act, const String &a
     if (addr < 0 || count < 0) return CommandOutput{String(act), String(), String("bad args")};
 
     if (strcmp(act, "read_holding") == 0) {
-        if (addr + count > (int)self->holdingRegs.size())
+        if (addr > (int)self->holdingRegs.size() - count)
             return CommandOutput{String(act), String(), String("addr out of range")};
         String out = "[";
         for (int i = 0; i < count; i++) { if (i) out += ","; out += self->holdingRegs[addr + i]; }
@@ -57,7 +57,7 @@ CommandOutput modbusAbilityDispatch(void *inst, const char *act, const String &a
         return CommandOutput{String(act), out, String()};
     }
     if (strcmp(act, "read_input") == 0) {
-        if (addr + count > (int)self->inputRegs.size())
+        if (addr > (int)self->inputRegs.size() - count)
             return CommandOutput{String(act), String(), String("addr out of range")};
         String out = "[";
         for (int i = 0; i < count; i++) { if (i) out += ","; out += self->inputRegs[addr + i]; }
@@ -65,7 +65,7 @@ CommandOutput modbusAbilityDispatch(void *inst, const char *act, const String &a
         return CommandOutput{String(act), out, String()};
     }
     if (strcmp(act, "read_coils") == 0) {
-        if (addr + count > (int)self->coils.size())
+        if (addr > (int)self->coils.size() - count)
             return CommandOutput{String(act), String(), String("addr out of range")};
         String out = "[";
         for (int i = 0; i < count; i++) { if (i) out += ","; out += self->coils[addr + i] ? "1" : "0"; }
@@ -73,7 +73,7 @@ CommandOutput modbusAbilityDispatch(void *inst, const char *act, const String &a
         return CommandOutput{String(act), out, String()};
     }
     if (strcmp(act, "read_discrete") == 0) {
-        if (addr + count > (int)self->discreteInputs.size())
+        if (addr > (int)self->discreteInputs.size() - count)
             return CommandOutput{String(act), String(), String("addr out of range")};
         String out = "[";
         for (int i = 0; i < count; i++) { if (i) out += ","; out += self->discreteInputs[addr + i] ? "1" : "0"; }

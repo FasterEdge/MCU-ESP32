@@ -47,7 +47,7 @@ fe_output_t ability_modbus_dispatch(void *inst, const char *act, const char *arg
     if (count > 42) return fe_err(act, "count too large");
 
     if (strcmp(act, "read_holding") == 0) {
-        if (addr + count > 64) return fe_err(act, "addr out of range");
+        if (addr > 64 - count) return fe_err(act, "addr out of range");
         char out[256];
         size_t n = 0;
         out[n++] = '[';
@@ -59,7 +59,7 @@ fe_output_t ability_modbus_dispatch(void *inst, const char *act, const char *arg
         return fe_ok(act, out);
     }
     if (strcmp(act, "read_input") == 0) {
-        if (addr + count > 64) return fe_err(act, "addr out of range");
+        if (addr > 64 - count) return fe_err(act, "addr out of range");
         char out[256];
         size_t n = 0;
         out[n++] = '[';
@@ -71,7 +71,7 @@ fe_output_t ability_modbus_dispatch(void *inst, const char *act, const char *arg
         return fe_ok(act, out);
     }
     if (strcmp(act, "read_coils") == 0) {
-        if (addr + count > 64) return fe_err(act, "addr out of range");
+        if (addr > 64 - count) return fe_err(act, "addr out of range");
         char out[192];
         size_t n = 0;
         out[n++] = '[';
@@ -83,7 +83,7 @@ fe_output_t ability_modbus_dispatch(void *inst, const char *act, const char *arg
         return fe_ok(act, out);
     }
     if (strcmp(act, "read_discrete") == 0) {
-        if (addr + count > 64) return fe_err(act, "addr out of range");
+        if (addr > 64 - count) return fe_err(act, "addr out of range");
         char out[192];
         size_t n = 0;
         out[n++] = '[';
