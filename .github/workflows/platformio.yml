@@ -1,6 +1,5 @@
 # FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
-# MCU 固件 CI: PlatformIO 编译仓库内所有含源码的 PlatformIO 工程
-# (纯头文件适配工程如 platformio_ide/ 无 src, 自动跳过; 避免空工程构建失败)。
+# MCU 固件 CI: PlatformIO 编译主工程 arduino/; platformio_ide(IDE 模板/移植骨架)做结构检查。
 name: 'PlatformIO 构建'
 
 on:
@@ -21,25 +20,19 @@ jobs:
           python-version: '3.12'
       - name: '安装 PlatformIO'
         run: pip install -q platformio
-      - name: '构建所有 PlatformIO 工程(无源码跳过)'
+      - name: '构建主工程 arduino/'
         run: |
           set -e
-          found=0
-          skipped=0
-          for ini in $(find . -name platformio.ini -not -path './.git/*'); do
-            d="$(dirname "$ini")"
-            src=$(find "$d" -maxdepth 3 \( -type d -name src -o -name '*.c' -o -name '*.cpp' -o -name '*.ino' -o -name '*.asm' \) -not -path '*/.git/*' | head -1)
-            if [ -z "$src" ]; then
-              skipped=$((skipped+1))
-              echo "跳过(无源码): $d"
-              continue
-            fi
-            found=$((found+1))
-            echo "===== pio run: $d ====="
-            pio run -d "$d"
-          done
-          echo "编译工程数=$found 跳过=$skipped"
-          if [ "$found" -eq 0 ] && [ "$skipped" -eq 0 ]; then
-            echo "未找到 platformio.ini"
-            exit 1
+          if [ -f arduino/platformio.ini ]; then
+            echo "===== pio run: arduino ====="
+            pio run -d arduino
+          else
+            echo "无 arduino/ 工程"
           fi
+      - name: 'platformio_ide 结构检查(移植骨架, 不编译)'
+        run: |
+          set -e
+          [ -f platformio_ide/platformio.ini ] || { echo "缺失 platformio_ide/platformio.ini"; exit 1; }
+          n=$(find platformio_ide -maxdepth 3 \( -name '*.c' -o -name '*.cpp' -o -name '*.asm' \) -not -path '*/\.git/*' | wc -l)
+          echo "platformio_ide 源码文件数: $n"
+          [ "$n" -gt 0 ] || { echo "platformio_ide 无源码"; exit 1; }
