@@ -1,0 +1,32 @@
+# FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
+# MCU 固件 CI: PlatformIO 编译仓库内所有 PlatformIO 工程。
+name: 'PlatformIO 构建'
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pio-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: '安装 PlatformIO'
+        run: pip install -q platformio
+      - name: '构建所有 PlatformIO 工程'
+        run: |
+          set -e
+          found=0
+          for ini in $(find . -name platformio.ini -not -path './.git/*'); do
+            found=1
+            echo "===== pio run: $(dirname "$ini") ====="
+            pio run -d "$(dirname "$ini")"
+          done
+          if [ "$found" -eq 0 ]; then echo "未找到 platformio.ini"; exit 1; fi
