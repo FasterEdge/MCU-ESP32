@@ -1,5 +1,6 @@
 # FasterEdge 开源项目 - Github: https://github.com/FasterEdge - Gitee: https://gitee.com/FasterEdge
-# MCU 固件 CI: PlatformIO 编译仓库内所有 PlatformIO 工程。
+# MCU 固件 CI: PlatformIO 编译仓库内所有含源码的 PlatformIO 工程
+# (纯头文件适配工程如 platformio_ide/ 无 src, 自动跳过; 避免空工程构建失败)。
 name: 'PlatformIO 构建'
 
 on:
@@ -20,13 +21,22 @@ jobs:
           python-version: '3.12'
       - name: '安装 PlatformIO'
         run: pip install -q platformio
-      - name: '构建所有 PlatformIO 工程'
+      - name: '构建所有 PlatformIO 工程(无源码跳过)'
         run: |
           set -e
           found=0
+          skipped=0
           for ini in $(find . -name platformio.ini -not -path './.git/*'); do
-            found=1
-            echo "===== pio run: $(dirname "$ini") ====="
-            pio run -d "$(dirname "$ini")"
+            d="$(dirname "$ini")"
+            src=$(find "$d" -maxdepth 3 \( -type d -name src -o -name '*.c' -o -name '*.cpp' -o -name '*.ino' -o -name '*.asm' \) -not -path '*/.git/*' | head -1)
+            if [ -z "$src" ]; then
+              skipped=$((skipped+1))
+              echo "跳过(无源码): $d"
+              continue
+            fi
+            found=$((found+1))
+            echo "===== pio run: $d ====="
+            pio run -d "$d"
           done
-          if [ "$found" -eq 0 ]; then echo "未找到 platformio.ini"; exit 1; fi
+          echo "编译工程数=$found 跳过=$skipped"
+          [ "$found" -eq 0 ] && [ "$skipped" -eq 0 ] && { echo "未找到 platformio.ini"; exit 1; }
