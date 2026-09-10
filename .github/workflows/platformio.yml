@@ -39,4 +39,7 @@ jobs:
             pio run -d "$d"
           done
           echo "编译工程数=$found 跳过=$skipped"
-          [ "$found" -eq 0 ] && [ "$skipped" -eq 0 ] && { echo "未找到 platformio.ini"; exit 1; }
+          if [ "$found" -eq 0 ] && [ "$skipped" -eq 0 ]; then
+            echo "未找到 platformio.ini"
+            exit 1
+          fi
