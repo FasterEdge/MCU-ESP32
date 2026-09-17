@@ -238,9 +238,26 @@ int fe_port_tcp_connect(const char *host, uint16_t port) {
     sa.sin_family = AF_INET;
     sa.sin_port = htons(port);
     sa.sin_addr.s_addr = inet_addr(host);
+    // 非阻塞 connect + select 3s 超时: 旧实现阻塞 connect 在无响应对端上永久挂起。
+    {
+        int fl = fcntl(fd, F_GETFL, 0);
+        fcntl(fd, F_SETFL, fl | O_NONBLOCK);
+    }
     if (connect(fd, (struct sockaddr *)&sa, sizeof(sa)) != 0) {
-        close(fd);
-        return -1;
+        if (errno == EINPROGRESS) {
+            fd_set wset;
+            struct timeval tv;
+            FD_ZERO(&wset); FD_SET(fd, &wset);
+            tv.tv_sec = 3; tv.tv_usec = 0;
+            if (select(fd + 1, NULL, &wset, NULL, &tv) <= 0) { close(fd); return -1; }
+        } else {
+            close(fd);
+            return -1;
+        }
+    }
+    {
+        int fl = fcntl(fd, F_GETFL, 0);
+        fcntl(fd, F_SETFL, fl & ~O_NONBLOCK);   // 恢复阻塞
     }
     g_sock = fd;
     return 0;
@@ -254,8 +271,14 @@ size_t fe_port_tcp_write(const uint8_t *data, size_t len) {
 
 int fe_port_tcp_read(uint8_t *buf, size_t len) {
     if (g_sock < 0) return -1;
+    // 设接收超时 3s: 旧实现阻塞 recv 在无数据时永久挂起(单线程任务被卡死)。
+    {
+        struct timeval tv;
+        tv.tv_sec = 3; tv.tv_usec = 0;
+        setsockopt(g_sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    }
     int n = recv(g_sock, buf, len, 0);
-    return n;   // 0=对端关闭, -1=错误
+    return n;   // 0=对端关闭, -1=错误(含超时 EAGAIN)
 }
 
 void fe_port_tcp_close(void) {
