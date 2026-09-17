@@ -90,13 +90,16 @@ void fe_port_uart_close(uint8_t port) {
 // NVS key 约束：<=15 字符，仅 [a-zA-Z0-9_]。把点号/斜杠路径
 // 规范化为下划线并截断，使 data_ConfigData 的扁平点号 key 可用。
 static void norm_nvs_key(const char *in, char *out, size_t outlen) {
-    size_t n = 0;
-    for (const char *p = in; *p && n + 1 < outlen && n < 14; p++) {
+    // 完整 key 的 FNV-1a 32 位散列 → 固定长度十六进制("k" + 8 hex)。
+    // 旧实现截断到 14 字符, 前 14 字符相同的两个 key(如 a.b.c.d.1 / a.b.c.d.2)
+    // 会静默映射到同一 NVS 槽互相覆盖; 散列保持区分度且满足 NVS <=15 字符约束。
+    uint32_t h = 2166136261u;
+    for (const char *p = in; *p; p++) {
         char c = *p;
         if (c == '.' || c == '/') c = '_';
-        out[n++] = c;
+        h = (h ^ (uint8_t)c) * 16777619u;
     }
-    out[n] = 0;
+    snprintf(out, outlen, "k%08lx", (unsigned long)h);
 }
 
 static bool nvs_open_ns(const char *ns, bool write, nvs_handle_t *h) {
