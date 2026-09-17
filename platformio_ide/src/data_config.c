@@ -126,10 +126,13 @@ fe_output_t data_config_dispatch(void *inst, const char *act, const char *args) 
                 if (used + (first ? 0u : 1u) + 3 >= sizeof(out)) return fe_err(act, "snapshot too large");
                 if (!first) out[used++] = ','; out[used++] = '"'; out[used] = 0;
                 if (!append_json(out, sizeof(out), &used, logical)) return fe_err(act, "snapshot too large");
+                if (used + 2 >= sizeof(out)) return fe_err(act, "snapshot too large");
                 out[used++] = '"';
                 if (snapshot) {
+                    if (used + 3 >= sizeof(out)) return fe_err(act, "snapshot too large");
                     out[used++] = ':'; out[used++] = '"'; out[used] = 0;
                     if (!append_json(out, sizeof(out), &used, val)) return fe_err(act, "snapshot too large");
+                    if (used + 2 >= sizeof(out)) return fe_err(act, "snapshot too large");
                     out[used++] = '"';
                 }
                 out[used] = 0; first = false;
