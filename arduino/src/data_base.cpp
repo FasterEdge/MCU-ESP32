@@ -20,7 +20,7 @@ CommandOutput baseDataDispatch(void *inst, const char *act, const String &args) 
     }
     if (strcmp(act, "info") == 0) {
         return CommandOutput{String(act),
-            String("{\"name\":\"BaseData\",\"firmware\":\"FasterEdge-MCU 1.0.20260831\","
+            String("{\"name\":\"BaseData\",\"firmware\":\"FasterEdge-MCU 1.0.20261022\","
                    "\"chip\":\"ESP32\",\"sdk\":\"Arduino\",\"cores\":" + String(ESP.getChipCores()) +
                    ",\"freq\":" + String(ESP.getCpuFreqMHz()) + "}"), String()};
     }
