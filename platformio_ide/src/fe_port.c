@@ -323,7 +323,7 @@ void fe_port_chip_info(char *out, size_t outlen) {
     esp_flash_get_size(NULL, &flash);
     snprintf(out, outlen,
              "{\"chip\":\"%s\",\"cores\":%d,\"features\":\"0x%08x\",\"flashBytes\":%lu}",
-             CONFIG_IDF_TARGET, ci.cores, ci.features, (unsigned long)flash);
+             CONFIG_IDF_TARGET, ci.cores, (unsigned int)ci.features, (unsigned long)flash);
 }
 
 // ============================================================

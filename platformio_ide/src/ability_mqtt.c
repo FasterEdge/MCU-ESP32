@@ -9,7 +9,9 @@ static int put_u16(uint8_t *b, size_t cap, size_t *n, uint16_t v) {
 }
 static int put_bytes(uint8_t *b, size_t cap, size_t *n, const uint8_t *p, size_t len) {
     if (*n + len > cap) return -1;
-    if (len) memcpy(b + *n, p, len); *n += len; return 0;
+    if (len) memcpy(b + *n, p, len);
+    *n += len;
+    return 0;
 }
 static int put_str(uint8_t *b, size_t cap, size_t *n, const char *s) {
     size_t len = s ? strlen(s) : 0;
@@ -18,7 +20,8 @@ static int put_str(uint8_t *b, size_t cap, size_t *n, const char *s) {
 }
 static int put_rl(uint8_t *b, size_t cap, size_t *n, size_t v) {
     do { uint8_t d = (uint8_t)(v % 128); v /= 128; if (v) d |= 0x80;
-         if (*n >= cap) return -1; b[(*n)++] = d; } while (v);
+         if (*n >= cap) return -1;
+         b[(*n)++] = d; } while (v);
     return 0;
 }
 static int packet(uint8_t type, const uint8_t *body, size_t blen, uint8_t *out, size_t cap) {
@@ -35,10 +38,13 @@ static int send_packet(uint8_t type, const uint8_t *body, size_t blen) {
 static int parse_host(const char *broker, char *host, size_t cap, uint16_t *port) {
     const char *c; unsigned long p = 1883;
     if (!broker || !host || cap == 0) return -1;
-    if (strlen(broker) >= cap) return -1; strcpy(host, broker);
+    if (strlen(broker) >= cap) return -1;
+    strcpy(host, broker);
     c = strrchr(host, ':');
     if (c && c != host) { char *end; p = strtoul(c + 1, &end, 10); if (*end || p < 1 || p > 65535) return -1; *((char *)c) = 0; }
-    if (!host[0]) return -1; *port = (uint16_t)p; return 0;
+    if (!host[0]) return -1;
+    *port = (uint16_t)p;
+    return 0;
 }
 static int parse_packet(mqtt_ability_t *s, const uint8_t *p, size_t len) {
     size_t i = 1, rl = 0, mult = 1, body;
@@ -51,7 +57,8 @@ static int parse_packet(mqtt_ability_t *s, const uint8_t *p, size_t len) {
     if (type == 2) { if (rl < 2 || p[body] != 0 || p[body + 1] != 0) return -1; s->connected = true; s->last_event = 2; }
     else if (type == 3) {
         size_t q = body, end = body + rl; uint16_t tl; int qos = (p[0] >> 1) & 3;
-        if (q + 2 > end) return -1; tl = ((uint16_t)p[q] << 8) | p[q + 1]; q += 2;
+        if (q + 2 > end) return -1;
+        tl = ((uint16_t)p[q] << 8) | p[q + 1]; q += 2;
         if (!tl || tl >= sizeof(s->last_topic) || q + tl > end) return -1;
         memcpy(s->last_topic, p + q, tl); s->last_topic[tl] = 0; q += tl;
         if (qos) { if (q + 2 > end) return -1; q += 2; }
@@ -77,7 +84,8 @@ fe_output_t ability_mqtt_dispatch(void *inst, const char *act, const char *args)
     if (strcmp(act, "set_broker") == 0) { if (!args || !args[0] || strlen(args) >= sizeof(s->broker)) return fe_err(act, "invalid broker"); strcpy(s->broker, args); return fe_ok(act, s->broker); }
     if (strcmp(act, "connect") == 0) {
         char host[96]; uint16_t port; if (parse_host(s->broker, host, sizeof(host), &port) != 0) return fe_err(act, "invalid broker");
-        if (!s->client_id[0]) strcpy(s->client_id, "FasterEdge-MCU"); if (strlen(s->client_id) > 65535) return fe_err(act, "client id too long");
+        if (!s->client_id[0]) strcpy(s->client_id, "FasterEdge-MCU");
+        if (strlen(s->client_id) > 65535) return fe_err(act, "client id too long");
         if (fe_port_tcp_connect(host, port) != 0) return fe_err(act, "tcp connect failed");
         n = 0; if (put_str(body, sizeof(body), &n, "MQTT") || put_bytes(body, sizeof(body), &n, (const uint8_t *)"\x04\x02\x00\x3c", 4) || put_str(body, sizeof(body), &n, s->client_id) || send_packet(0x10, body, n) != 0) { fe_port_tcp_close(); return fe_err(act, "connect packet failed"); }
         s->connected = false; s->rx_len = 0;
